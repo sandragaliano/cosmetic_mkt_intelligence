@@ -51,10 +51,6 @@ class TikTokVideoProcessor:
         options.add_argument('--no-sandbox')
         options.add_argument('--disable-dev-shm-usage')
         options.add_argument('--disable-blink-features=AutomationControlled')
-        options.add_argument('--disable-site-isolation-trials')
-        options.add_argument('--log-level=3')  # Solo muestra errores críticos
-        options.add_argument('--disable-webrtc') # desactivar WebRTC 
-        options.add_argument('--disable-features=WebRtcHideLocalIpsWithMdns') # Desactivar servicios STUN
         options.add_experimental_option('excludeSwitches', ['enable-automation'])
         options.add_experimental_option('useAutomationExtension', False)
         options.add_argument('--user-agent=Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36')
@@ -296,9 +292,9 @@ class TikTokVideoProcessor:
 
 def main():
     paths = Paths(
-        video_folder=r'C:\Users\sandr\Documents\scrp_tiktok_tfg\videos',
-        audio_folder=r'C:\Users\sandr\Documents\scrp_tiktok_tfg\audios',
-        url_data=r'C:\Users\sandr\Documents\scrp_tiktok_tfg\data\url_data.xlsx'
+        video_folder=r'C:\Users\sandr\Documents\scr_tktk\videos',
+        audio_folder=r'C:\Users\sandr\Documents\scr_tktk\audios',
+        url_data=r'C:\Users\sandr\Documents\scr_tktk\url_data.xlsx'
     )
 
     processor = TikTokVideoProcessor(paths)
