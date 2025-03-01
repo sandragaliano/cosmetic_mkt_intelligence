@@ -292,9 +292,9 @@ class TikTokVideoProcessor:
 
 def main():
     paths = Paths(
-        video_folder=r'C:\Users\sandr\Documents\scr_tktk\videos',
-        audio_folder=r'C:\Users\sandr\Documents\scr_tktk\audios',
-        url_data=r'C:\Users\sandr\Documents\scr_tktk\url_data.xlsx'
+        video_folder=r'C:\Users\sandr\Documents\scrp_tiktok_tfg\videos',
+        audio_folder=r'C:\Users\sandr\Documents\scrp_tiktok_tfg\audios',
+        url_data=r'C:\Users\sandr\Documents\scrp_tiktok_tfg\data\url_data.xlsx'
     )
 
     processor = TikTokVideoProcessor(paths)

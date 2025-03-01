@@ -13,7 +13,6 @@ from nltk.tokenize import sent_tokenize
 import spacy
 import nltk
 import json
-from cosmetic_patterns import cosmetic_patterns
 nltk.download('punkt')
 
 # python -m spacy download es_core_news_md
@@ -445,6 +444,7 @@ def extract_entities(text, nlp_es, nlp_en):
     return entities
 
 
+# Función corregida para cargar URLs ya procesadas
 def load_processed_urls(output_path):
     """
     Carga las URLs ya procesadas de un archivo existente.
@@ -465,18 +465,20 @@ def load_processed_urls(output_path):
             print(f"Archivo de resultados existente cargado: {output_path}")
             print(f"Registros existentes: {len(existing_results)}")
             
-            # Identificamos la columna que contiene las URLs o IDs de video
-            id_column = None
+            # Identificar todas las posibles columnas que pueden contener la URL o ID
+            id_columns = []
             for col in ['video_url', 'video_id', 'id_urlvideo']:
                 if col in existing_results.columns:
-                    id_column = col
-                    break
+                    id_columns.append(col)
             
-            if id_column:
-                processed_urls = set(existing_results[id_column].dropna().unique())
+            if id_columns:
+                # Procesar cada columna identificada
+                for col in id_columns:
+                    urls = existing_results[col].dropna().astype(str).unique()
+                    processed_urls.update(urls)
                 print(f"URLs ya procesadas: {len(processed_urls)}")
             else:
-                print("No se encontró columna de identificación de video en el archivo existente.")
+                print("ADVERTENCIA: No se encontró columna de identificación de video en el archivo existente.")
                 
         except Exception as e:
             print(f"Error al cargar archivo existente: {e}")
@@ -485,6 +487,7 @@ def load_processed_urls(output_path):
         print(f"No se encontró archivo de resultados existente. Se creará uno nuevo.")
     
     return processed_urls, existing_results
+
 
 
 def save_results(results_df, new_results, output_path):
@@ -533,20 +536,6 @@ def process_tiktok_videos(tiktok_df, sephora_df, sentence_model, sentiment_analy
     """
     Procesa los videos de TikTok para detectar productos, analizar sentimiento y extraer entidades.
     Guarda los resultados de forma incremental.
-    
-    Args:
-        tiktok_df (pd.DataFrame): DataFrame con datos de TikTok
-        sephora_df (pd.DataFrame): DataFrame con datos de Sephora
-        sentence_model: Modelo de similitud semántica
-        sentiment_analyzer: Modelo de análisis de sentimiento
-        nlp_model: Modelo SpaCy para procesamiento de lenguaje
-        output_path (str): Ruta para guardar resultados
-        processed_urls (set): Conjunto de URLs ya procesadas
-        existing_results (pd.DataFrame): DataFrame con resultados existentes
-        save_interval (int): Intervalo para guardar resultados
-        
-    Returns:
-        pd.DataFrame: DataFrame con todos los resultados
     """
     if processed_urls is None:
         processed_urls = set()
@@ -566,21 +555,43 @@ def process_tiktok_videos(tiktok_df, sephora_df, sentence_model, sentiment_analy
     # Filtramos solo los videos no procesados
     total_videos = len(tiktok_df)
     skipped_count = 0
+    print(f"Total de videos a procesar: {total_videos}")
+    print(f"Videos ya procesados anteriormente: {len(processed_urls)}")
     
+    # Crear una lista de todas las URLs/IDs disponibles en el dataset actual
+    all_video_ids = set()
     for idx, row in tiktok_df.iterrows():
-        video_id = row['id_urlvideo'] if 'id_urlvideo' in row else str(idx)
-        video_url = row[url_column] if url_column in row else video_id
+        video_id = str(row['id_urlvideo'] if 'id_urlvideo' in row else str(idx))
+        all_video_ids.add(video_id)
+        if url_column in row:
+            all_video_ids.add(str(row[url_column]))
+    
+    print(f"Total de URLs/IDs únicos en el dataset actual: {len(all_video_ids)}")
+    print(f"URLs/IDs por procesar: {len(all_video_ids - processed_urls)}")
+    
+    # Crear un dataframe filtrado (solo videos no procesados)
+    videos_to_process = []
+    for idx, row in tiktok_df.iterrows():
+        video_id = str(row['id_urlvideo'] if 'id_urlvideo' in row else str(idx))
+        video_url = str(row[url_column]) if url_column in row else video_id
         
-        # Verificar si ya fue procesado
-        if video_url in processed_urls or video_id in processed_urls:
+        # Si ni el ID ni la URL están en processed_urls, agregar a la lista
+        if video_id not in processed_urls and video_url not in processed_urls:
+            videos_to_process.append(idx)
+        else:
             skipped_count += 1
-            if skipped_count % 10 == 0:
-                print(f"Omitidos {skipped_count} videos ya procesados...")
-            continue
+    
+    print(f"Se procesarán {len(videos_to_process)} videos, omitiendo {skipped_count} ya procesados.")
+    
+    # Procesar solo los videos que no han sido procesados antes
+    for i, idx in enumerate(videos_to_process):
+        row = tiktok_df.loc[idx]
+        video_id = str(row['id_urlvideo'] if 'id_urlvideo' in row else str(idx))
+        video_url = str(row[url_column]) if url_column in row else video_id
         
         transcription = row['transcription']
         
-        print(f"Procesando video {processed_count+1}/{total_videos-skipped_count} (ID: {video_id})")
+        print(f"Procesando video {i+1}/{len(videos_to_process)} (ID: {video_id})")
         
         # DETECTAR PRODUCTOS
         detected_items = detect_sephora_products(transcription, sephora_df, sentence_model)
@@ -594,6 +605,7 @@ def process_tiktok_videos(tiktok_df, sephora_df, sentence_model, sentiment_analy
             # Guardar un registro vacío para indicar que el video fue procesado
             empty_result = {
                 'video_id': video_id,
+                'id_urlvideo': video_id,  # Aseguramos que ambas columnas tengan valores
                 'detection_type': 'no_detection',
                 'method': 'none',
                 'score': 0,
@@ -615,6 +627,7 @@ def process_tiktok_videos(tiktok_df, sephora_df, sentence_model, sentiment_analy
                 # Preparar resultado según el tipo de detección
                 result = {
                     'video_id': video_id,
+                    'id_urlvideo': video_id,  # Aseguramos que ambas columnas tengan valores
                     'detection_type': item.get('detection_type', 'unknown'),
                     'method': item.get('method', 'unknown'),
                     'score': item.get('score', 0),
@@ -643,8 +656,8 @@ def process_tiktok_videos(tiktok_df, sephora_df, sentence_model, sentiment_analy
             processed_count += 1
         
         # Guardar resultados cada cierto número de videos procesados
-        if processed_count % save_interval == 0 and new_results:
-            print(f"Guardando resultados parciales después de procesar {processed_count} videos...")
+        if (i+1) % save_interval == 0 and new_results:
+            print(f"Guardando resultados parciales después de procesar {i+1}/{len(videos_to_process)} videos...")
             results_df = save_results(results_df, new_results, output_path)
             new_results = []  # Limpiar lista después de guardar
     
@@ -653,6 +666,7 @@ def process_tiktok_videos(tiktok_df, sephora_df, sentence_model, sentiment_analy
         print("Guardando resultados finales...")
         results_df = save_results(results_df, new_results, output_path)
     
+    print(f"Procesamiento completado. Se procesaron {processed_count} videos nuevos.")
     return results_df
 
 
