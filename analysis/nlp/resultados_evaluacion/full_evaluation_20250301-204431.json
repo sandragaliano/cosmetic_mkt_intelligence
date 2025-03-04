@@ -1,0 +1,101 @@
+{
+  "direct_evaluation": {},
+  "existing_results_evaluation": {
+    "bert_detection": {
+      "detection_types": {
+        "category_only": 14,
+        "product_brand_category": 23,
+        "brand_category": 1,
+        "brand_only": 2
+      },
+      "detection_methods": {
+        "exact_match": 33,
+        "semantic_similarity": 7
+      },
+      "avg_confidence": 2.2325734133947464,
+      "confidence_distribution": {
+        "high": 0.6,
+        "medium": 0.05,
+        "low": 0.35
+      }
+    },
+    "bert_sentiment": {
+      "sentiment_distribution": {
+        "1 star": 0.125,
+        "5 stars": 0.65,
+        "3 stars": 0.1,
+        "4 stars": 0.075,
+        "2 stars": 0.05
+      },
+      "avg_confidence": 0.5195602138837179,
+      "confidence_by_sentiment": {
+        "1 star": 0.36339402198791504,
+        "5 stars": 0.5825389220546453,
+        "3 stars": 0.4467788562178612,
+        "4 stars": 0.43282829556200236,
+        "2 stars": 0.3669130802154541
+      },
+      "sentiment_by_detection_type": {
+        "category_only": {
+          "1 star": 0.21428571428571427,
+          "3 stars": 0.14285714285714285,
+          "5 stars": 0.42857142857142855,
+          "4 stars": 0.07142857142857142,
+          "2 stars": 0.14285714285714285
+        },
+        "product_brand_category": {
+          "5 stars": 0.7391304347826086,
+          "3 stars": 0.08695652173913043,
+          "1 star": 0.08695652173913043,
+          "4 stars": 0.08695652173913043
+        },
+        "brand_category": {
+          "5 stars": 1.0
+        },
+        "brand_only": {
+          "5 stars": 1.0
+        }
+      }
+    },
+    "spacy_ner": {
+      "entity_type_distribution": {
+        "PERSON": 0.07879924953095685,
+        "CARDINAL": 0.06566604127579738,
+        "ORDINAL": 0.020637898686679174,
+        "DATE": 0.04127579737335835,
+        "COSMETIC_ATTRIBUTE": 0.6360225140712945,
+        "TIME": 0.001876172607879925,
+        "PRODUCT": 0.013133208255159476,
+        "GPE": 0.024390243902439025,
+        "LOC": 0.001876172607879925,
+        "ORG": 0.07129455909943715,
+        "FAC": 0.01125703564727955,
+        "WORK_OF_ART": 0.016885553470919325,
+        "NORP": 0.00375234521575985,
+        "PERCENT": 0.009380863039399626,
+        "MONEY": 0.001876172607879925,
+        "EVENT": 0.001876172607879925
+      },
+      "entity_subtype_distribution": {
+        "MATTE_FINISH": 0.0058997050147492625,
+        "GLOSSY_FINISH": 0.02359882005899705,
+        "FIRMING": 0.0029498525073746312,
+        "CLEAN_BEAUTY": 0.0029498525073746312,
+        "NGRAM_ATTRIBUTE": 0.9056047197640118,
+        "TEXTURE": 0.0058997050147492625,
+        "COMFORT": 0.0029498525073746312,
+        "SKIN_TONE": 0.0058997050147492625,
+        "FORMULA": 0.02359882005899705,
+        "HYDRATION_MOISTURE": 0.008849557522123894,
+        "PORE_MINIMIZING": 0.0058997050147492625,
+        "SKIN_TYPE": 0.0058997050147492625
+      },
+      "avg_entities_per_sample": 13.325,
+      "entity_context_quality": {
+        "with_context": 1.0,
+        "without_context": 0.0
+      }
+    },
+    "sample_size": 40
+  }
+}

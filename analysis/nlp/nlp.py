@@ -1,100 +1,51 @@
 # DEPENDENCIES
-# !pip install transformers sentence-transformers nltk spacy torch pandas
+import os
+import re
+import json
+import time
 import pandas as pd
 import numpy as np
-import re
-import os
+import nltk
+import spacy
+import torch
+from nltk.tokenize import sent_tokenize
 from sentence_transformers import SentenceTransformer
 from transformers import pipeline, AutoTokenizer, AutoModelForTokenClassification
 from transformers import BertTokenizer, BertForSequenceClassification
-import torch
-import nltk
-from nltk.tokenize import sent_tokenize
-import spacy
-import nltk
-import json
+from collections import Counter
+
+# Download NLTK resources
 nltk.download('punkt')
 
-# python -m spacy download es_core_news_md
-
-# Verificación de directorios
+# DIRECTORY SETUP
 base_dir = 'C:/Users/sandr/Documents/scrp_tiktok_tfg'
 data_dir = os.path.join(base_dir, 'data')
 clean_data_dir = os.path.join(data_dir, 'clean_data')
 analysis_dir = os.path.join(base_dir, 'analysis/nlp')
 
+# Create directories if they don't exist
 for directory in [data_dir, clean_data_dir, analysis_dir]:
     if not os.path.exists(directory):
         os.makedirs(directory)
         print(f"Directorio creado: {directory}")
 
-# Paths archivos
+# FILE PATHS
 sephora_file = os.path.join(clean_data_dir, 'sephora_website_cleaned.csv')
 tiktok_file = os.path.join(clean_data_dir, 'url_data_cleaned.xlsx')
-output_file = os.path.join(analysis_dir, 'product_mentions_analysis.csv')
+output_file = os.path.join(analysis_dir, 'product_mentions_analysis.xlsx')
 
-# Verificar la existencia de los archivos
+# Verify files exist
 if not os.path.exists(sephora_file):
     raise FileNotFoundError(f"Archivo de datos de Sephora no encontrado: {sephora_file}")
 if not os.path.exists(tiktok_file):
     raise FileNotFoundError(f"Archivo de datos de TikTok no encontrado: {tiktok_file}")
 
-# Carga
+# LOAD DATA
 sephora_df = pd.read_csv(sephora_file)
-
 tiktok_df = pd.read_excel(tiktok_file)
 url_column = 'id_urlvideo'
 
-cosmetic_patterns = [
-    # Hidratación y nutrición
-    r'\b(hydrat(?:ing|ion|e)|moistur(?:e|izing)|quenching|deep hydration|plumping|dewy|refreshing)\b',
-    r'\b(nourishing|repairing|strengthening|conditioning|restorative|replenishing|soothing|revitalizing)\b',
-
-    # Acabado
-    r'\b(matte|opaque|velvety|satin-matte|semi-matte|powdery|soft-matte|chalky|flat)\b',  # Acabado mate
-    r'\b(shiny|glow(?:ing)?|radiant|dewy|illuminating|luminous|pearlescent|glossy|wet-look|shimmering)\b',  # Brillante
-    r'\b(natural finish|skin-like|second-skin|subtle glow|soft-focus|blurred finish|velvety finish|airbrushed)\b',  # Natural
-    r'\b(glowy|hydrated|glossy finish|glow-up|radiant finish|luminous finish)\b',  # Acabado luminoso
-
-    # Tono y color
-    r'\b(warm(?:-toned)?|cool(?:-toned)?|neutral(?:-toned)?|olive(?:-toned)?|rose-toned|yellow-toned|pink-toned)\b',  # Subtono
-    r'\b(full coverage|medium coverage|sheer|buildable|tinted|translucent|color-adapting|light coverage)\b',  # Cobertura
-    r'\b(color-correcting|tone-correcting|even skin tone|complexion-enhancing|brightening|neutralizing|complexion-perfecting)\b',  # Corrección de tono
-    r'\b(high pigment|intense color|vivid|rich color|bold|color payoff|multi-dimensional|true-to-color)\b',  # Pigmentación
-
-    # Duración y resistencia
-    r'\b(long-lasting|24-hour wear|all-day wear|extended wear|fade-resistant|sweat-proof|heat-resistant|humidity-resistant)\b',
-    r'\b(waterproof|smudge-proof|transfer-resistant|humidity-proof|oil-proof|weatherproof|mask-proof|teardrop-resistant)\b',
-
-    # Textura y sensación
-    r'\b(texture|smooth(?:ing)?|silky|lightweight|bouncy|creamy|buttery|airy|gel-based|whipped|mousse-like|featherlight|soft-touch)\b',
-    r'\b(non-sticky|non-greasy|fast-absorbing|quick-dry|cooling|refreshing|weightless|velvety-smooth|hydrating)\b',
-
-    # Protección y cuidado de la piel
-    r'\b(SPF|sun protection|UV protection|broad spectrum|UVA/UVB protection|sunscreen-infused|sun-kissed|UV defense)\b',
-    r'\b(anti-age|anti-aging|rejuvenating|firming|wrinkle reduction|youth-boosting|plumping|collagen-boosting|tightening)\b',
-    r'\b(soothing|calming|redness-reducing|anti-inflammatory|gentle|hypoallergenic|sensitive-skin friendly|non-irritating)\b',
-    r'\b(non-comedogenic|won’t clog pores|acne-safe|dermatologist-tested|skin barrier support|pore-refining|anti-breakout)\b',
-    r'\b(exfoliating|resurfacing|cell turnover|AHA|BHA|glycolic acid|salicylic acid|retinol-infused|brightening acids)\b',
-    r'\b(pore-minimizing|blurring|soft-focus|skin-smoothing|airbrushed finish|filter effect|flawless)\b',
-    r'\b(firming|skin-tightening|elasticity-boosting|anti-sagging|lifting effect|contouring|sculpting)\b',
-
-    # Tipo de piel
-    r'\b(oily skin|dry skin|combination skin|normal skin|sensitive skin|acne-prone skin|mature skin|problem skin)\b',
-    r'\b(oil-free|hydrating|non-drying|non-comedogenic|mattifying|moisturizing|balancing)\b',
-    r'\b(pore-refining|pore-minimizing|pore-filling|oil-absorbing|sebum-controlling)\b',
-
-    # Ingredientes y fórmula
-    r'\b(formula|composition|blend|infused with|enriched with|custom formula|advanced formula|innovative formula|lightweight formula)\b',
-    r'\b(ingredients|active ingredients|botanical extracts|clean formula|natural extracts|essential oils|peptides|anti-oxidants|vitamin C)\b',
-    r'\b(vegan|cruelty-free|plant-based|no animal testing|eco-friendly|sustainable|biodegradable|paraben-free|silicone-free|gluten-free|alcohol-free)\b',
-
-    # Aplicación y uso
-    r'\b(easy to blend|streak-free|seamless application|finger-friendly|brush-friendly|sponge-friendly|mess-free)\b',
-    r'\b(multitasking|2-in-1|3-in-1|multi-use|hybrid formula|primer-infused|self-setting|no powder needed|all-in-one)\b'
-    ]
-
-# Carga de BERT:
+# NLP MODELS
 print("Cargando modelos de NLP...")
 sentence_model = SentenceTransformer('paraphrase-multilingual-MiniLM-L12-v2')
 sentiment_analyzer = pipeline(
@@ -102,26 +53,65 @@ sentiment_analyzer = pipeline(
     model="nlptown/bert-base-multilingual-uncased-sentiment",
     tokenizer="nlptown/bert-base-multilingual-uncased-sentiment"
 )
-
-# Carga de NER
 nlp_en = spacy.load("en_core_web_md")
-# Intentamos cargar el modelo en español si está disponible
-try:
-    nlp_es = spacy.load("es_core_news_md")
-    print("Modelo SpaCy en español cargado correctamente.")
-except:
-    print("Modelo SpaCy en español no encontrado. Solo se utilizará el modelo en inglés.")
-    nlp_es = None
 
-
+# HELPER FUNCTIONS
 def extract_categories(categories_str):
-    """Extrae categorías desde una string en formato 'Makeup', 'Face', 'Foundation'"""
+    """
+    Extrae categorías desde una string en formato 'Makeup', 'Face', 'Foundation'
+    
+    Args:
+        categories_str (str): String con categorías separadas por comas
+        
+    Returns:
+        list: Lista de categorías limpias
+    """
     if not isinstance(categories_str, str):
         return []
     # Limpiamos las comillas y separamos las categorías
     categories = [cat.strip().strip("'").strip('"') for cat in categories_str.split(',')]
     return [cat for cat in categories if cat]  # Eliminar categorías vacías
 
+def analyze_sentiment(text, analyzer):
+    """
+    Analiza el sentimiento de la transcripción.
+    
+    Args:
+        text (str): transcription
+        analyzer: Modelo de análisis de sentimiento
+        
+    Returns:
+        dict: Diccionario con sentimiento y score
+    """
+    if pd.isna(text) or text == "":
+        return {'sentiment': 'neutral', 'score': 0.5}
+    
+    # Si el texto es demasiado largo, dividirlo en fragmentos
+    if len(text) > 512:
+        chunks = [text[i:i+512] for i in range(0, len(text), 512)]
+        results = [analyzer(chunk)[0] for chunk in chunks]
+        
+        # Promediar los resultados
+        labels = [r['label'] for r in results]
+        scores = [r['score'] for r in results]
+        
+        # Contar la frecuencia de cada etiqueta
+        label_counter = Counter(labels)
+        most_common_label = label_counter.most_common(1)[0][0]
+        
+        # Score promedio para la etiqueta más común
+        avg_score = sum([s for l, s in zip(labels, scores) if l == most_common_label]) / label_counter[most_common_label]
+        
+        return {
+            'sentiment': most_common_label,
+            'score': avg_score
+        }
+    else:
+        result = analyzer(text)[0]
+        return {
+            'sentiment': result['label'],
+            'score': result['score']
+        }
 
 def detect_sephora_products(transcription, sephora_products, model):
     """
@@ -142,19 +132,15 @@ def detect_sephora_products(transcription, sephora_products, model):
         
     Returns:
         list: Lista de diccionarios con los productos, marcas y categorías detectados.
-              Cada diccionario puede contener 'product', 'brand' y/o 'categories' según lo que se haya detectado.
     """
     if pd.isna(transcription) or transcription == "":
         return []
     
-    # Asegurarse de que la transcripción esté en inglés (aquí iría el código de traducción si es necesario)
-    transcription_en = transcription
-    
     # Dividir la transcripción en oraciones
-    sentences = [s.strip() for s in re.split(r'(?<=[.!?])\s+', transcription_en) if s.strip()]
+    sentences = [s.strip() for s in re.split(r'(?<=[.!?])\s+', transcription) if s.strip()]
     
     # Obtener listas de productos, marcas y categorías
-    product_names = sephora_products['product_with_brand'].dropna().tolist()
+    product_names = sephora_products['title'].dropna().tolist()
     brand_names = sephora_products['brand'].dropna().unique().tolist()
     
     # Extraer todas las categorías únicas
@@ -163,7 +149,26 @@ def detect_sephora_products(transcription, sephora_products, model):
         all_categories.extend(extract_categories(cats))
     all_categories = list(set(all_categories))  # Eliminar duplicados
     
-    stopwords = {'the', 'el', 'la', 'los', 'las', 'de', 'para', 'con', 'and', 'y', 'a', 'o', 'u'}
+    stopwords = {
+    'i', 'me', 'my', 'myself', 'we', 'our', 'ours', 'ourselves', 'you', 'your', 'yours', 
+    'yourself', 'yourselves', 'he', 'him', 'his', 'himself', 'she', 'her', 'hers', 'herself', 
+    'it', 'its', 'itself', 'they', 'them', 'their', 'theirs', 'themselves', 'what', 'which', 
+    'who', 'whom', 'this', 'that', 'these', 'those', 'am', 'is', 'are', 'was', 'were', 'be', 
+    'been', 'being', 'have', 'has', 'had', 'having', 'do', 'does', 'did', 'doing', 'a', 'an', 
+    'the', 'and', 'but', 'if', 'or', 'because', 'as', 'until', 'while', 'of', 'at', 'by', 
+    'for', 'with', 'about', 'against', 'between', 'into', 'through', 'during', 'before', 
+    'after', 'above', 'below', 'to', 'from', 'up', 'down', 'in', 'out', 'on', 'off', 'over', 
+    'under', 'again', 'further', 'then', 'once', 'here', 'there', 'when', 'where', 'why', 
+    'how', 'all', 'any', 'both', 'each', 'few', 'more', 'most', 'other', 'some', 'such', 
+    'no', 'nor', 'not', 'only', 'own', 'same', 'so', 'than', 'too', 'very', 'can', 'will', 
+    'just', 'don', 'should', 'now', 'like', 'yeah', 'uh', 'oh', 'hmm', 'hey', 'hi', 'hello', 
+    'ok', 'okay', 'gonna', 'wanna', 'gotta', 'ya', 'nah', 'lol', 'omg', 'btw', 'idk', 'tbh', 
+    'smh', 'imo', 'imho', 'brb', 'lmao', 'rofl', 'wtf', 'thx', 'pls', 'plz', 'dm', 'msg', 
+    'thing', 'stuff', 'kinda', 'sorta', 'really', 'actually', 'basically', 'literally', 
+    'probably', 'maybe', 'totally', 'definitely', 'honestly', 'seriously', 'whatever', 
+    'anyway', 'k', 'bc', 'tho', 'didn', 'doesn', 'wasn', 'weren', 'ain', 'shouldn'
+    }
+
     
     detected_items = []
 
@@ -197,8 +202,8 @@ def detect_sephora_products(transcription, sephora_products, model):
                     matches = sum(1 for keyword in product_keywords 
                                 if re.search(r'\b' + re.escape(keyword) + r'\b', sentence_lower))
                     
-                    # Requerir que al menos 50% de las palabras clave coincidan
-                    min_matches = max(1, len(product_keywords) // 2)
+                    # Requerir que al menos 30% de las palabras clave coincidan
+                    min_matches = max(1, len(product_keywords) // 3)
                     
                     if matches >= min_matches:
                         # Obtener las categorías del producto
@@ -228,7 +233,7 @@ def detect_sephora_products(transcription, sephora_products, model):
         for i, sentence in enumerate(sentences):
             sentence_lower = sentence.lower()
             similarities = np.inner(sentence_embeddings[i], product_embeddings)
-            threshold = 0.7
+            threshold = 0.6
             
             for j, score in enumerate(similarities):
                 if score > threshold:
@@ -350,104 +355,9 @@ def detect_sephora_products(transcription, sephora_products, model):
     
     return detected_items
 
-
-def analyze_sentiment(text, analyzer):
-    """
-    Analiza el sentimiento de la transcripción.
-    
-    Args:
-        text (str): transcription
-        analyzer: Modelo de análisis de sentimiento
-        
-    Returns:
-        dict: Diccionario con sentimiento y score
-    """
-    if pd.isna(text) or text == "":
-        return {'sentiment': 'neutral', 'score': 0.5}
-    
-    # Si el texto es demasiado largo, dividirlo en fragmentos
-    if len(text) > 512:
-        chunks = [text[i:i+512] for i in range(0, len(text), 512)]
-        results = [analyzer(chunk)[0] for chunk in chunks]
-        
-        # Promediar los resultados
-        labels = [r['label'] for r in results]
-        scores = [r['score'] for r in results]
-        
-        # Contar la frecuencia de cada etiqueta
-        from collections import Counter
-        label_counter = Counter(labels)
-        most_common_label = label_counter.most_common(1)[0][0]
-        
-        # Score promedio para la etiqueta más común
-        avg_score = sum([s for l, s in zip(labels, scores) if l == most_common_label]) / label_counter[most_common_label]
-        
-        return {
-            'sentiment': most_common_label,
-            'score': avg_score
-        }
-    else:
-        result = analyzer(text)[0]
-        return {
-            'sentiment': result['label'],
-            'score': result['score']
-        }
-
-
-def extract_entities(text, nlp_es, nlp_en):
-    """
-    Extrae entidades nombradas de un texto.
-    
-    Args:
-        text (str): transcripcion
-        nlp_es: Modelo SpaCy en español
-        nlp_en: Modelo SpaCy en inglés
-        
-    Returns:
-        list: Lista de entidades extraídas con tipo y texto
-    """
-    if pd.isna(text) or text == "":
-        return []
-    
-    # Detectar idioma (simple)
-    spanish_words = ["el", "la", "los", "las", "es", "son", "para", "con", "y", "que", "de"]
-    text_lower = text.lower()
-    spanish_count = sum([1 for word in spanish_words if f" {word} " in f" {text_lower} "])
-    
-    # Seleccionar modelo según idioma detectado
-    nlp = nlp_es if spanish_count > 2 else nlp_en
-    
-    # Procesar texto
-    doc = nlp(text)
-    
-    # Extraer entidades
-    entities = []
-    for ent in doc.ents:
-        entities.append({
-            'text': ent.text,
-            'start': ent.start_char,
-            'end': ent.end_char,
-            'type': ent.label_
-        })
-    
-    # Extraer atributos cosméticos usando patrones específicos: usamos cosmetic_patterns del cosmetic_patterns.py
-    for pattern in cosmetic_patterns:
-        matches = re.finditer(pattern, text, re.IGNORECASE)
-        for match in matches:
-            entities.append({
-                'text': match.group(0),
-                'start': match.start(),
-                'end': match.end(),
-                'type': 'COSMETIC_ATTRIBUTE'
-            })
-    
-    return entities
-
-
-# Función corregida para cargar URLs ya procesadas
 def load_processed_urls(output_path):
     """
-    Carga las URLs ya procesadas de un archivo existente.
+    Carga las URLs ya procesadas de un archivo existente (Excel o CSV).
     
     Args:
         output_path (str): Ruta al archivo de resultados
@@ -459,40 +369,66 @@ def load_processed_urls(output_path):
     processed_urls = set()
     existing_results = pd.DataFrame()
     
+    # Determinar si el archivo es Excel o CSV
+    is_excel = output_path.endswith('.xlsx')
+    
+    # Verificar también el archivo alternativo
+    alternative_path = output_path.replace('.xlsx', '.csv') if is_excel else output_path.replace('.csv', '.xlsx')
+    
+    # Verificar primero el archivo principal
     if os.path.exists(output_path) and os.path.getsize(output_path) > 0:
         try:
-            existing_results = pd.read_csv(output_path)
+            if is_excel:
+                existing_results = pd.read_excel(output_path, sheet_name='Resultados')
+            else:
+                existing_results = pd.read_csv(output_path)
+                
             print(f"Archivo de resultados existente cargado: {output_path}")
             print(f"Registros existentes: {len(existing_results)}")
             
-            # Identificar todas las posibles columnas que pueden contener la URL o ID
-            id_columns = []
-            for col in ['video_url', 'video_id', 'id_urlvideo']:
-                if col in existing_results.columns:
-                    id_columns.append(col)
-            
-            if id_columns:
-                # Procesar cada columna identificada
-                for col in id_columns:
-                    urls = existing_results[col].dropna().astype(str).unique()
-                    processed_urls.update(urls)
-                print(f"URLs ya procesadas: {len(processed_urls)}")
-            else:
-                print("ADVERTENCIA: No se encontró columna de identificación de video en el archivo existente.")
-                
         except Exception as e:
-            print(f"Error al cargar archivo existente: {e}")
+            print(f"Error al cargar archivo existente {output_path}: {e}")
+            existing_results = pd.DataFrame()
+    
+    # Si no se pudo cargar el archivo principal, intentar con el alternativo
+    elif os.path.exists(alternative_path) and os.path.getsize(alternative_path) > 0:
+        try:
+            if alternative_path.endswith('.xlsx'):
+                existing_results = pd.read_excel(alternative_path, sheet_name='Resultados')
+            else:
+                existing_results = pd.read_csv(alternative_path)
+                
+            print(f"Archivo alternativo de resultados cargado: {alternative_path}")
+            print(f"Registros existentes: {len(existing_results)}")
+            
+        except Exception as e:
+            print(f"Error al cargar archivo alternativo {alternative_path}: {e}")
             existing_results = pd.DataFrame()
     else:
         print(f"No se encontró archivo de resultados existente. Se creará uno nuevo.")
     
+    # Extraer URLs procesadas si hay resultados
+    if not existing_results.empty:
+        # Identificar todas las posibles columnas que pueden contener la URL o ID
+        id_columns = []
+        for col in ['video_url', 'video_id', 'id_urlvideo']:
+            if col in existing_results.columns:
+                id_columns.append(col)
+        
+        if id_columns:
+            # Procesar cada columna identificada
+            for col in id_columns:
+                urls = existing_results[col].dropna().astype(str).unique()
+                processed_urls.update(urls)
+            print(f"URLs ya procesadas: {len(processed_urls)}")
+        else:
+            print("ADVERTENCIA: No se encontró columna de identificación de video en el archivo existente.")
+    
     return processed_urls, existing_results
-
-
 
 def save_results(results_df, new_results, output_path):
     """
-    Guarda los resultados en un archivo CSV.
+    Guarda los resultados en un archivo Excel, evitando columnas duplicadas.
     
     Args:
         results_df (pd.DataFrame): DataFrame con resultados existentes
@@ -502,6 +438,10 @@ def save_results(results_df, new_results, output_path):
     Returns:
         pd.DataFrame: DataFrame con todos los resultados combinados
     """
+    # Cambiar la extensión del archivo a .xlsx
+    if output_path.endswith('.csv'):
+        output_path = output_path.replace('.csv', '.xlsx')
+    
     # Convertir nuevos resultados a DataFrame
     if new_results:
         new_results_df = pd.DataFrame(new_results)
@@ -512,30 +452,74 @@ def save_results(results_df, new_results, output_path):
         else:
             combined_results = new_results_df
         
-        # Crear copia para guardar (evitamos problemas con tipos complejos)
+        # Crear copia para guardar
         combined_results_to_save = combined_results.copy()
         
         # Convertir columnas de tipo complejo a string para evitar errores al guardar
-        complex_columns = ['extracted_entities', 'categories']
+        complex_columns = ['categories']
         for col in complex_columns:
             if col in combined_results_to_save.columns:
-                combined_results_to_save[f'{col}_str'] = combined_results_to_save[col].apply(lambda x: str(x) if x is not None else "[]")
-                combined_results_to_save = combined_results_to_save.drop(columns=[col])
+                # Asegurarse de que se usa json.dumps para serializar correctamente
+                combined_results_to_save[col] = combined_results_to_save[col].apply(
+                    lambda x: json.dumps(x, ensure_ascii=False) if x is not None else "[]"
+                )
         
-        # Guardar a CSV
-        combined_results_to_save.to_csv(output_path, index=False)
-        print(f"Resultados guardados en: {output_path}")
+        # Guardar a Excel con formato
+        try:
+            with pd.ExcelWriter(output_path, engine='openpyxl') as writer:
+                # Hoja principal con todos los resultados
+                combined_results_to_save.to_excel(writer, sheet_name='Resultados', index=False)
+                
+                # Crear hojas adicionales con análisis agregados
+                if 'detection_type' in combined_results_to_save.columns:
+                    # Resumen por tipo de detección
+                    detection_summary = combined_results_to_save['detection_type'].value_counts().reset_index()
+                    detection_summary.columns = ['Tipo de Detección', 'Cantidad']
+                    detection_summary.to_excel(writer, sheet_name='Resumen_Detecciones', index=False)
+                
+                if 'brand' in combined_results_to_save.columns:
+                    # Resumen por marca
+                    brand_summary = combined_results_to_save['brand'].value_counts().reset_index()
+                    brand_summary.columns = ['Marca', 'Menciones']
+                    brand_summary.to_excel(writer, sheet_name='Resumen_Marcas', index=False)
+                
+                if 'sentiment' in combined_results_to_save.columns:
+                    # Resumen por sentimiento
+                    sentiment_summary = combined_results_to_save['sentiment'].value_counts().reset_index()
+                    sentiment_summary.columns = ['Sentimiento', 'Cantidad']
+                    sentiment_summary.to_excel(writer, sheet_name='Resumen_Sentimiento', index=False)
         
+            print(f"Resultados guardados en formato Excel: {output_path}")
+        except Exception as e:
+            print(f"Error al guardar en Excel: {e}")
+            # Fallback: guardar como CSV si hay error con Excel
+            csv_path = output_path.replace('.xlsx', '.csv')
+            combined_results_to_save.to_csv(csv_path, index=False)
+            print(f"Resultados guardados en formato CSV como fallback: {csv_path}")
+        
+        # Devolver los resultados combinados con las columnas originales
         return combined_results
     
     return results_df
 
-
-def process_tiktok_videos(tiktok_df, sephora_df, sentence_model, sentiment_analyzer, nlp_model, 
+def process_tiktok_videos(tiktok_df, sephora_df, sentence_model, sentiment_analyzer, 
                          output_path, processed_urls=None, existing_results=None, save_interval=5):
     """
-    Procesa los videos de TikTok para detectar productos, analizar sentimiento y extraer entidades.
+    Procesa los videos de TikTok para detectar productos y analizar sentimiento.
     Guarda los resultados de forma incremental.
+    
+    Args:
+        tiktok_df (pd.DataFrame): DataFrame con datos de TikTok
+        sephora_df (pd.DataFrame): DataFrame con productos de Sephora
+        sentence_model: Modelo para similitud semántica
+        sentiment_analyzer: Modelo para análisis de sentimiento
+        output_path (str): Ruta para guardar resultados
+        processed_urls (set, optional): Conjunto de URLs ya procesadas
+        existing_results (pd.DataFrame, optional): DataFrame con resultados existentes
+        save_interval (int, optional): Intervalo para guardar resultados parciales
+        
+    Returns:
+        pd.DataFrame: DataFrame con todos los resultados
     """
     if processed_urls is None:
         processed_urls = set()
@@ -552,13 +536,13 @@ def process_tiktok_videos(tiktok_df, sephora_df, sentence_model, sentiment_analy
         print("Error: No se encontró columna 'transcription' en el DataFrame de TikTok")
         return results_df
     
-    # Filtramos solo los videos no procesados
+    # Estadísticas iniciales
     total_videos = len(tiktok_df)
     skipped_count = 0
     print(f"Total de videos a procesar: {total_videos}")
     print(f"Videos ya procesados anteriormente: {len(processed_urls)}")
     
-    # Crear una lista de todas las URLs/IDs disponibles en el dataset actual
+    # Recopilar IDs de videos disponibles
     all_video_ids = set()
     for idx, row in tiktok_df.iterrows():
         video_id = str(row['id_urlvideo'] if 'id_urlvideo' in row else str(idx))
@@ -569,7 +553,7 @@ def process_tiktok_videos(tiktok_df, sephora_df, sentence_model, sentiment_analy
     print(f"Total de URLs/IDs únicos en el dataset actual: {len(all_video_ids)}")
     print(f"URLs/IDs por procesar: {len(all_video_ids - processed_urls)}")
     
-    # Crear un dataframe filtrado (solo videos no procesados)
+    # Crear lista de videos a procesar
     videos_to_process = []
     for idx, row in tiktok_df.iterrows():
         video_id = str(row['id_urlvideo'] if 'id_urlvideo' in row else str(idx))
@@ -583,7 +567,7 @@ def process_tiktok_videos(tiktok_df, sephora_df, sentence_model, sentiment_analy
     
     print(f"Se procesarán {len(videos_to_process)} videos, omitiendo {skipped_count} ya procesados.")
     
-    # Procesar solo los videos que no han sido procesados antes
+    # Procesar videos pendientes
     for i, idx in enumerate(videos_to_process):
         row = tiktok_df.loc[idx]
         video_id = str(row['id_urlvideo'] if 'id_urlvideo' in row else str(idx))
@@ -593,19 +577,15 @@ def process_tiktok_videos(tiktok_df, sephora_df, sentence_model, sentiment_analy
         
         print(f"Procesando video {i+1}/{len(videos_to_process)} (ID: {video_id})")
         
-        # DETECTAR PRODUCTOS
+        # Detectar productos
         detected_items = detect_sephora_products(transcription, sephora_df, sentence_model)
         
         if not detected_items:
             print(f"  No se detectaron menciones para el video {video_id}")
-            # Aún así, marcar como procesado
-            processed_urls.add(video_url)
-            processed_urls.add(video_id)
-            processed_count += 1
             # Guardar un registro vacío para indicar que el video fue procesado
             empty_result = {
                 'video_id': video_id,
-                'id_urlvideo': video_id,  # Aseguramos que ambas columnas tengan valores
+                'id_urlvideo': video_id,
                 'detection_type': 'no_detection',
                 'method': 'none',
                 'score': 0,
@@ -614,27 +594,28 @@ def process_tiktok_videos(tiktok_df, sephora_df, sentence_model, sentiment_analy
             }
             new_results.append(empty_result)
         else:
+            # Análisis de sentimiento para toda la transcripción
+            overall_sentiment = analyze_sentiment(transcription, sentiment_analyzer)
+            
             print(f"  Se detectaron {len(detected_items)} menciones para el video {video_id}")
             
             # Procesar cada detección
             for item in detected_items:
                 # Análisis de sentimiento para la oración donde se detectó la mención
-                sentiment = analyze_sentiment(item.get('sentence', ''), sentiment_analyzer)
+                sentence_sentiment = analyze_sentiment(item.get('sentence', ''), sentiment_analyzer)
                 
-                # Extracción de entidades
-                entities = extract_entities(item.get('sentence', ''), nlp_es, nlp_en)
-                
-                # Preparar resultado según el tipo de detección
+                # Preparar resultado
                 result = {
                     'video_id': video_id,
-                    'id_urlvideo': video_id,  # Aseguramos que ambas columnas tengan valores
+                    'id_urlvideo': video_id,
                     'detection_type': item.get('detection_type', 'unknown'),
                     'method': item.get('method', 'unknown'),
                     'score': item.get('score', 0),
                     'sentence': item.get('sentence', ''),
-                    'sentiment': sentiment['sentiment'],
-                    'sentiment_score': sentiment['score'],
-                    'extracted_entities': entities
+                    'sentiment': sentence_sentiment['sentiment'],
+                    'sentiment_score': sentence_sentiment['score'],
+                    'overall_sentiment': overall_sentiment['sentiment'],
+                    'overall_sentiment_score': overall_sentiment['score']
                 }
                 
                 # Añadir campos específicos según el tipo de detección
@@ -650,12 +631,12 @@ def process_tiktok_videos(tiktok_df, sephora_df, sentence_model, sentiment_analy
                 
                 new_results.append(result)
             
-            # Marcar como procesado
-            processed_urls.add(video_url)
-            processed_urls.add(video_id)
-            processed_count += 1
+        # Marcar como procesado
+        processed_urls.add(video_url)
+        processed_urls.add(video_id)
+        processed_count += 1
         
-        # Guardar resultados cada cierto número de videos procesados
+        # Guardar resultados parciales
         if (i+1) % save_interval == 0 and new_results:
             print(f"Guardando resultados parciales después de procesar {i+1}/{len(videos_to_process)} videos...")
             results_df = save_results(results_df, new_results, output_path)
@@ -669,9 +650,9 @@ def process_tiktok_videos(tiktok_df, sephora_df, sentence_model, sentiment_analy
     print(f"Procesamiento completado. Se procesaron {processed_count} videos nuevos.")
     return results_df
 
-
-# FUNCIÓN PRINCIPAL DE EJECUCIÓN
 def main():
+    """Función principal de ejecución del script"""
+    start_time = time.time()
     # Cargar datos ya procesados
     processed_urls, existing_results = load_processed_urls(output_file)
     
@@ -684,7 +665,6 @@ def main():
         sephora_df, 
         sentence_model, 
         sentiment_analyzer, 
-        nlp_en,
         output_file,
         processed_urls,
         existing_results,
@@ -726,12 +706,23 @@ def main():
             print("\nVideos procesados:")
             print(f"Total: {len(results_df['video_id'].unique())}")
             print(f"Con menciones: {len(product_mentions['video_id'].unique())}")
-    else:
-        print("No se detectaron menciones.")
     
-    print("Procesamiento completo.")
+    # Mostrar tiempo total de ejecución
+    end_time = time.time()
+    execution_time = end_time - start_time
+    minutes, seconds = divmod(execution_time, 60)
+    hours, minutes = divmod(minutes, 60)
+    
+    print(f"\nTiempo total de ejecución: {int(hours)}h {int(minutes)}m {seconds:.2f}s")
+    print("=" * 50)
+    print("FIN DEL PROCESAMIENTO")
+    print("=" * 50)
 
-
-# Ejecutar el programa
+# Ejecutar el script si se llama directamente
 if __name__ == "__main__":
-    main()
+    try:
+        main()
+    except Exception as e:
+        print(f"Error en la ejecución: {e}")
+        import traceback
+        traceback.print_exc()
