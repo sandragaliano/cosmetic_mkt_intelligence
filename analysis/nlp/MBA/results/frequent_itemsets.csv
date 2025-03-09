@@ -1,0 +1,117 @@
+support,itemsets,itemsets_str
+0.14754098360655737,frozenset({'Anastasia Beverly Hills'}),Anastasia Beverly Hills
+0.19672131147540983,frozenset({'Benefit Cosmetics'}),Benefit Cosmetics
+0.07650273224043716,frozenset({'Bobbi Brown'}),Bobbi Brown
+0.6229508196721312,frozenset({'Charlotte Tilbury'}),Charlotte Tilbury
+0.07650273224043716,frozenset({'DUO'}),DUO
+0.28415300546448086,frozenset({'Dior Beauty'}),Dior Beauty
+0.3442622950819672,frozenset({'Drunk Elephant'}),Drunk Elephant
+0.25136612021857924,frozenset({'Fenty Beauty'}),Fenty Beauty
+0.0546448087431694,frozenset({'Glow Recipe'}),Glow Recipe
+0.20218579234972678,frozenset({'Hourglass'}),Hourglass
+0.2459016393442623,frozenset({'Huda Beauty'}),Huda Beauty
+0.060109289617486336,frozenset({'LANEIGE'}),LANEIGE
+0.08743169398907104,frozenset({'MAC Cosmetics'}),MAC Cosmetics
+0.08196721311475409,frozenset({'MAKE UP FOR EVER'}),MAKE UP FOR EVER
+0.14207650273224043,frozenset({'MAKEUP BY MARIO'}),MAKEUP BY MARIO
+0.21311475409836064,frozenset({'NARS'}),NARS
+0.08196721311475409,frozenset({'Natasha Denona'}),Natasha Denona
+0.19672131147540983,frozenset({'PATRICK TA'}),PATRICK TA
+0.12568306010928962,frozenset({'ROSE INC'}),ROSE INC
+0.34972677595628415,frozenset({'Rare Beauty'}),Rare Beauty
+0.14207650273224043,frozenset({'Sol de Janeiro'}),Sol de Janeiro
+0.13114754098360656,frozenset({'Too Faced'}),Too Faced
+0.08196721311475409,frozenset({'Urban Decay'}),Urban Decay
+0.08196721311475409,frozenset({'YSL Beauty'}),YSL Beauty
+0.14207650273224043,frozenset({'tarte'}),tarte
+0.09289617486338798,"frozenset({'Anastasia Beverly Hills', 'Charlotte Tilbury'})","Anastasia Beverly Hills, Charlotte Tilbury"
+0.07103825136612021,"frozenset({'Drunk Elephant', 'Anastasia Beverly Hills'})","Drunk Elephant, Anastasia Beverly Hills"
+0.1092896174863388,"frozenset({'Benefit Cosmetics', 'Charlotte Tilbury'})","Benefit Cosmetics, Charlotte Tilbury"
+0.060109289617486336,"frozenset({'Benefit Cosmetics', 'Dior Beauty'})","Benefit Cosmetics, Dior Beauty"
+0.07103825136612021,"frozenset({'Drunk Elephant', 'Benefit Cosmetics'})","Drunk Elephant, Benefit Cosmetics"
+0.06557377049180328,"frozenset({'Benefit Cosmetics', 'Fenty Beauty'})","Benefit Cosmetics, Fenty Beauty"
+0.060109289617486336,"frozenset({'Benefit Cosmetics', 'Huda Beauty'})","Benefit Cosmetics, Huda Beauty"
+0.06557377049180328,"frozenset({'NARS', 'Benefit Cosmetics'})","NARS, Benefit Cosmetics"
+0.07650273224043716,"frozenset({'Benefit Cosmetics', 'Rare Beauty'})","Benefit Cosmetics, Rare Beauty"
+0.0546448087431694,"frozenset({'Bobbi Brown', 'Charlotte Tilbury'})","Bobbi Brown, Charlotte Tilbury"
+0.23497267759562843,"frozenset({'Charlotte Tilbury', 'Dior Beauty'})","Charlotte Tilbury, Dior Beauty"
+0.21311475409836064,"frozenset({'Drunk Elephant', 'Charlotte Tilbury'})","Drunk Elephant, Charlotte Tilbury"
+0.18032786885245902,"frozenset({'Charlotte Tilbury', 'Fenty Beauty'})","Charlotte Tilbury, Fenty Beauty"
+0.16393442622950818,"frozenset({'Hourglass', 'Charlotte Tilbury'})","Hourglass, Charlotte Tilbury"
+0.18032786885245902,"frozenset({'Huda Beauty', 'Charlotte Tilbury'})","Huda Beauty, Charlotte Tilbury"
+0.060109289617486336,"frozenset({'Charlotte Tilbury', 'MAC Cosmetics'})","Charlotte Tilbury, MAC Cosmetics"
+0.060109289617486336,"frozenset({'Charlotte Tilbury', 'MAKE UP FOR EVER'})","Charlotte Tilbury, MAKE UP FOR EVER"
+0.09836065573770492,"frozenset({'MAKEUP BY MARIO', 'Charlotte Tilbury'})","MAKEUP BY MARIO, Charlotte Tilbury"
+0.13114754098360656,"frozenset({'NARS', 'Charlotte Tilbury'})","NARS, Charlotte Tilbury"
+0.1092896174863388,"frozenset({'PATRICK TA', 'Charlotte Tilbury'})","PATRICK TA, Charlotte Tilbury"
+0.08743169398907104,"frozenset({'Charlotte Tilbury', 'ROSE INC'})","Charlotte Tilbury, ROSE INC"
+0.24043715846994534,"frozenset({'Charlotte Tilbury', 'Rare Beauty'})","Charlotte Tilbury, Rare Beauty"
+0.07103825136612021,"frozenset({'Charlotte Tilbury', 'Sol de Janeiro'})","Charlotte Tilbury, Sol de Janeiro"
+0.08743169398907104,"frozenset({'Charlotte Tilbury', 'Too Faced'})","Charlotte Tilbury, Too Faced"
+0.060109289617486336,"frozenset({'Urban Decay', 'Charlotte Tilbury'})","Urban Decay, Charlotte Tilbury"
+0.0546448087431694,"frozenset({'YSL Beauty', 'Charlotte Tilbury'})","YSL Beauty, Charlotte Tilbury"
+0.09836065573770492,"frozenset({'Charlotte Tilbury', 'tarte'})","Charlotte Tilbury, tarte"
+0.1092896174863388,"frozenset({'Drunk Elephant', 'Dior Beauty'})","Drunk Elephant, Dior Beauty"
+0.08196721311475409,"frozenset({'Dior Beauty', 'Fenty Beauty'})","Dior Beauty, Fenty Beauty"
+0.07650273224043716,"frozenset({'Hourglass', 'Dior Beauty'})","Hourglass, Dior Beauty"
+0.09289617486338798,"frozenset({'Huda Beauty', 'Dior Beauty'})","Huda Beauty, Dior Beauty"
+0.06557377049180328,"frozenset({'MAKEUP BY MARIO', 'Dior Beauty'})","MAKEUP BY MARIO, Dior Beauty"
+0.07650273224043716,"frozenset({'NARS', 'Dior Beauty'})","NARS, Dior Beauty"
+0.07103825136612021,"frozenset({'PATRICK TA', 'Dior Beauty'})","PATRICK TA, Dior Beauty"
+0.13114754098360656,"frozenset({'Rare Beauty', 'Dior Beauty'})","Rare Beauty, Dior Beauty"
+0.07650273224043716,"frozenset({'Drunk Elephant', 'Fenty Beauty'})","Drunk Elephant, Fenty Beauty"
+0.06557377049180328,"frozenset({'Drunk Elephant', 'Hourglass'})","Drunk Elephant, Hourglass"
+0.07650273224043716,"frozenset({'Drunk Elephant', 'Huda Beauty'})","Drunk Elephant, Huda Beauty"
+0.0546448087431694,"frozenset({'Drunk Elephant', 'MAKEUP BY MARIO'})","Drunk Elephant, MAKEUP BY MARIO"
+0.08743169398907104,"frozenset({'Drunk Elephant', 'NARS'})","Drunk Elephant, NARS"
+0.06557377049180328,"frozenset({'Drunk Elephant', 'PATRICK TA'})","Drunk Elephant, PATRICK TA"
+0.0546448087431694,"frozenset({'Drunk Elephant', 'ROSE INC'})","Drunk Elephant, ROSE INC"
+0.1366120218579235,"frozenset({'Drunk Elephant', 'Rare Beauty'})","Drunk Elephant, Rare Beauty"
+0.1092896174863388,"frozenset({'Drunk Elephant', 'Sol de Janeiro'})","Drunk Elephant, Sol de Janeiro"
+0.07103825136612021,"frozenset({'Drunk Elephant', 'tarte'})","Drunk Elephant, tarte"
+0.09836065573770492,"frozenset({'Huda Beauty', 'Fenty Beauty'})","Huda Beauty, Fenty Beauty"
+0.07650273224043716,"frozenset({'NARS', 'Fenty Beauty'})","NARS, Fenty Beauty"
+0.09289617486338798,"frozenset({'Rare Beauty', 'Fenty Beauty'})","Rare Beauty, Fenty Beauty"
+0.060109289617486336,"frozenset({'Too Faced', 'Fenty Beauty'})","Too Faced, Fenty Beauty"
+0.060109289617486336,"frozenset({'MAKEUP BY MARIO', 'Hourglass'})","MAKEUP BY MARIO, Hourglass"
+0.09836065573770492,"frozenset({'PATRICK TA', 'Hourglass'})","PATRICK TA, Hourglass"
+0.060109289617486336,"frozenset({'Hourglass', 'Rare Beauty'})","Hourglass, Rare Beauty"
+0.07650273224043716,"frozenset({'NARS', 'Huda Beauty'})","NARS, Huda Beauty"
+0.060109289617486336,"frozenset({'Huda Beauty', 'ROSE INC'})","Huda Beauty, ROSE INC"
+0.1092896174863388,"frozenset({'Huda Beauty', 'Rare Beauty'})","Huda Beauty, Rare Beauty"
+0.0546448087431694,"frozenset({'Huda Beauty', 'tarte'})","Huda Beauty, tarte"
+0.07650273224043716,"frozenset({'MAKEUP BY MARIO', 'PATRICK TA'})","MAKEUP BY MARIO, PATRICK TA"
+0.06557377049180328,"frozenset({'MAKEUP BY MARIO', 'Rare Beauty'})","MAKEUP BY MARIO, Rare Beauty"
+0.10382513661202186,"frozenset({'NARS', 'Rare Beauty'})","NARS, Rare Beauty"
+0.08196721311475409,"frozenset({'PATRICK TA', 'Rare Beauty'})","PATRICK TA, Rare Beauty"
+0.06557377049180328,"frozenset({'Sol de Janeiro', 'Rare Beauty'})","Sol de Janeiro, Rare Beauty"
+0.06557377049180328,"frozenset({'Rare Beauty', 'tarte'})","Rare Beauty, tarte"
+0.0546448087431694,"frozenset({'Benefit Cosmetics', 'Charlotte Tilbury', 'Dior Beauty'})","Benefit Cosmetics, Charlotte Tilbury, Dior Beauty"
+0.0546448087431694,"frozenset({'Benefit Cosmetics', 'Charlotte Tilbury', 'Rare Beauty'})","Benefit Cosmetics, Charlotte Tilbury, Rare Beauty"
+0.09289617486338798,"frozenset({'Drunk Elephant', 'Charlotte Tilbury', 'Dior Beauty'})","Drunk Elephant, Charlotte Tilbury, Dior Beauty"
+0.07103825136612021,"frozenset({'Charlotte Tilbury', 'Dior Beauty', 'Fenty Beauty'})","Charlotte Tilbury, Dior Beauty, Fenty Beauty"
+0.07103825136612021,"frozenset({'Hourglass', 'Charlotte Tilbury', 'Dior Beauty'})","Hourglass, Charlotte Tilbury, Dior Beauty"
+0.08196721311475409,"frozenset({'Huda Beauty', 'Charlotte Tilbury', 'Dior Beauty'})","Huda Beauty, Charlotte Tilbury, Dior Beauty"
+0.0546448087431694,"frozenset({'MAKEUP BY MARIO', 'Charlotte Tilbury', 'Dior Beauty'})","MAKEUP BY MARIO, Charlotte Tilbury, Dior Beauty"
+0.060109289617486336,"frozenset({'NARS', 'Charlotte Tilbury', 'Dior Beauty'})","NARS, Charlotte Tilbury, Dior Beauty"
+0.0546448087431694,"frozenset({'PATRICK TA', 'Charlotte Tilbury', 'Dior Beauty'})","PATRICK TA, Charlotte Tilbury, Dior Beauty"
+0.1092896174863388,"frozenset({'Charlotte Tilbury', 'Rare Beauty', 'Dior Beauty'})","Charlotte Tilbury, Rare Beauty, Dior Beauty"
+0.0546448087431694,"frozenset({'Drunk Elephant', 'Charlotte Tilbury', 'Fenty Beauty'})","Drunk Elephant, Charlotte Tilbury, Fenty Beauty"
+0.060109289617486336,"frozenset({'Drunk Elephant', 'Hourglass', 'Charlotte Tilbury'})","Drunk Elephant, Hourglass, Charlotte Tilbury"
+0.07103825136612021,"frozenset({'Drunk Elephant', 'Huda Beauty', 'Charlotte Tilbury'})","Drunk Elephant, Huda Beauty, Charlotte Tilbury"
+0.10382513661202186,"frozenset({'Drunk Elephant', 'Charlotte Tilbury', 'Rare Beauty'})","Drunk Elephant, Charlotte Tilbury, Rare Beauty"
+0.060109289617486336,"frozenset({'Drunk Elephant', 'Charlotte Tilbury', 'Sol de Janeiro'})","Drunk Elephant, Charlotte Tilbury, Sol de Janeiro"
+0.08196721311475409,"frozenset({'Huda Beauty', 'Charlotte Tilbury', 'Fenty Beauty'})","Huda Beauty, Charlotte Tilbury, Fenty Beauty"
+0.0546448087431694,"frozenset({'NARS', 'Charlotte Tilbury', 'Fenty Beauty'})","NARS, Charlotte Tilbury, Fenty Beauty"
+0.07103825136612021,"frozenset({'Charlotte Tilbury', 'Rare Beauty', 'Fenty Beauty'})","Charlotte Tilbury, Rare Beauty, Fenty Beauty"
+0.07650273224043716,"frozenset({'PATRICK TA', 'Hourglass', 'Charlotte Tilbury'})","PATRICK TA, Hourglass, Charlotte Tilbury"
+0.060109289617486336,"frozenset({'NARS', 'Huda Beauty', 'Charlotte Tilbury'})","NARS, Huda Beauty, Charlotte Tilbury"
+0.07650273224043716,"frozenset({'Huda Beauty', 'Charlotte Tilbury', 'Rare Beauty'})","Huda Beauty, Charlotte Tilbury, Rare Beauty"
+0.060109289617486336,"frozenset({'MAKEUP BY MARIO', 'PATRICK TA', 'Charlotte Tilbury'})","MAKEUP BY MARIO, PATRICK TA, Charlotte Tilbury"
+0.06557377049180328,"frozenset({'NARS', 'Charlotte Tilbury', 'Rare Beauty'})","NARS, Charlotte Tilbury, Rare Beauty"
+0.060109289617486336,"frozenset({'PATRICK TA', 'Rare Beauty', 'Charlotte Tilbury'})","PATRICK TA, Rare Beauty, Charlotte Tilbury"
+0.06557377049180328,"frozenset({'Drunk Elephant', 'Rare Beauty', 'Dior Beauty'})","Drunk Elephant, Rare Beauty, Dior Beauty"
+0.0546448087431694,"frozenset({'Huda Beauty', 'Rare Beauty', 'Dior Beauty'})","Huda Beauty, Rare Beauty, Dior Beauty"
+0.0546448087431694,"frozenset({'Drunk Elephant', 'Rare Beauty', 'NARS'})","Drunk Elephant, Rare Beauty, NARS"
+0.0546448087431694,"frozenset({'Drunk Elephant', 'Sol de Janeiro', 'Rare Beauty'})","Drunk Elephant, Sol de Janeiro, Rare Beauty"
+0.060109289617486336,"frozenset({'Drunk Elephant', 'Charlotte Tilbury', 'Rare Beauty', 'Dior Beauty'})","Drunk Elephant, Charlotte Tilbury, Rare Beauty, Dior Beauty"
